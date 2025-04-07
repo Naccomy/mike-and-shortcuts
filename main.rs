@@ -3,9 +3,12 @@ use std::{
     io::stdin,
 };
 
-fn main() {
-    let mut input_lines = input_lines();
+type Graph = HashMap<u32, Vec<u32>>;
 
+fn main() {
+    let mut input_lines = stdin().lines().map(|l| l.unwrap());
+
+    // Parse input
     let n = input_lines.next().unwrap().parse::<u32>().unwrap();
     let shortcut_line = input_lines.next().unwrap();
     let shortcuts = shortcut_line
@@ -20,7 +23,17 @@ fn resolve<I>(n: u32, shortcuts: I) -> Vec<u32>
 where
     I: Iterator<Item = u32>,
 {
-    let mut graph: HashMap<u32, Vec<u32>> = HashMap::new();
+    let graph = build_graph(n, shortcuts);
+    let mut result = Vec::with_capacity(n as usize);
+    for i in 1..=n {
+        let val = bfs(&graph, i, HashSet::new());
+        result.push(val);
+    }
+    result
+}
+
+fn build_graph(n: u32, shortcuts: impl Iterator<Item = u32>) -> Graph {
+    let mut graph: HashMap<u32, Vec<u32>> = HashMap::with_capacity(n as usize);
 
     // Build base graph
     for intersection in 2..=n {
@@ -40,19 +53,16 @@ where
         graph.entry(start).or_default().push(end);
     }
 
-    let mut result = vec![];
-    for i in 1..=n {
-        let val = bfs(&graph, i, HashSet::new());
-        result.push(val);
-    }
-
-    result
+    graph
 }
 
 fn bfs(graph: &HashMap<u32, Vec<u32>>, target: u32, mut visited: HashSet<u32>) -> u32 {
     let mut queue = VecDeque::new();
+
+    // Insert first node to process
     queue.push_back(Some(1));
     queue.push_back(None);
+
     let mut distance = 0;
 
     while let Some(node) = queue.pop_front() {
@@ -89,8 +99,4 @@ fn print_solution(solution: Vec<u32>) {
         .collect::<Vec<_>>()
         .join(" ");
     println!("{s}")
-}
-
-fn input_lines() -> impl Iterator<Item = String> {
-    stdin().lines().map(|l| l.unwrap())
 }
