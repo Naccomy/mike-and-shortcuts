@@ -24,12 +24,7 @@ where
     I: Iterator<Item = u32>,
 {
     let graph = build_graph(n, shortcuts);
-    let mut result = Vec::with_capacity(n as usize);
-    for i in 1..=n {
-        let val = bfs(&graph, i, HashSet::new());
-        result.push(val);
-    }
-    result
+    bfs_better(&graph, HashSet::new())
 }
 
 fn build_graph(n: u32, shortcuts: impl Iterator<Item = u32>) -> Graph {
@@ -56,7 +51,9 @@ fn build_graph(n: u32, shortcuts: impl Iterator<Item = u32>) -> Graph {
     graph
 }
 
-fn bfs(graph: &HashMap<u32, Vec<u32>>, target: u32, mut visited: HashSet<u32>) -> u32 {
+fn bfs_better(graph: &HashMap<u32, Vec<u32>>, mut visited: HashSet<u32>) -> Vec<u32> {
+    let mut result = vec![0; graph.len()];
+
     let mut queue = VecDeque::new();
 
     // Insert first node to process
@@ -80,16 +77,14 @@ fn bfs(graph: &HashMap<u32, Vec<u32>>, target: u32, mut visited: HashSet<u32>) -
             continue;
         }
 
-        if node == target {
-            return distance;
-        }
+        result[node as usize - 1] = distance;
 
         for neighbor in graph.get(&node).unwrap() {
             queue.push_back(Some(*neighbor));
         }
     }
 
-    unreachable!("No path found...")
+    result
 }
 
 fn print_solution(solution: Vec<u32>) {
